@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request
-
+from datetime import datetime
 app = Flask(__name__) 
-
 @app.route('/', methods=['GET', 'POST'])
 def HelloWorld():
 	if request.method == "POST":
 		url = request.form["url"]
+		author = request.form["author"]
+		print str(datetime.now())
 		print url
+		print author
+       
 	return render_template('form.html', user="Azamat")
 
 if __name__ == '__main__': # if it was called by python interpreter, no imported to another .py file
