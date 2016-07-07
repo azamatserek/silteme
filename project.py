@@ -39,8 +39,7 @@ def HelloWorld():
 				'url': url, 
 				'author': author, 
 				'current_time': current_time,
-				'votes': 1,
-				'_id':1
+				'votes': 1
 				})
 
 			return render_template('form.html', alert="ok")
