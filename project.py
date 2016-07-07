@@ -29,18 +29,16 @@ def HelloWorld():
 			db.links.insert({
 				'url': url, 
 				'author': author, 
-				'current_time': current_time})
+				'current_time': current_time
 
-			data = {
-				"url": url,
-				"author": author,
-				"time": current_time
-			}
+				})
 
-			return render_template("info.html", data=data)
-
+			return render_template('form.html', alert="ok")
 
 	return render_template('form.html')
+@app.route('/all')
+def display():
+	return render_template("info.html", data = db.links.find())
 
 if __name__ == '__main__': # if it was called by python interpreter, no imported to another .py file
     app.debug = True
