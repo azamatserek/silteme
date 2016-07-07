@@ -4,10 +4,13 @@
 		<a href="/">&lt;-- 	back</a>
 		<p>
 		    {% for doc in data %}
-				<legend><h3>Link:</h3></legend>{{doc.url}}<br>
-				<legend><h3>Author:</h3></legend>{{doc.author}}<br>
-				<legend><h3>Current Time:</h3></legend>{{doc.current_time}}
+				<h3>Link:</h3>{{doc.url}}<br/>
+				<h3>Author:</h3>{{doc.author}}<br/>
+				<h3>Current Time:</h3>{{doc.current_time}}<br/>
+				<h3>Votes: </h3> {{doc.votes}}<br/>
+				<h3><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></h3>
 			{% endfor %}	
+			<hr/>
 		</p>
 	</body>
 </html>
