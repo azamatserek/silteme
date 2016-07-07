@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for, redirect
+
 from datetime import datetime
 from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
@@ -8,6 +9,12 @@ app = Flask(__name__)
 mongo = PyMongo(app)
 connection = MongoClient()
 db = connection.silteme
+
+@app.route('/vote/<m_id>')
+def upvote (m_id):
+	db.links.update({'_id': m_id}, 
+					{'$inc': {'votes': 1}})
+	return redirect(url_for('display'))
 
 @app.route('/', methods=['GET', 'POST'])
 def HelloWorld():
@@ -31,7 +38,7 @@ def HelloWorld():
 				'url': url, 
 				'author': author, 
 				'current_time': current_time,
-				'vote': 1,
+				'votes': 1,
 				})
 
 			return render_template('form.html', alert="ok")
