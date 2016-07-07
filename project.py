@@ -4,6 +4,7 @@ from datetime import datetime
 from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
 import validators
+from bson.objectid import ObjectId
 
 app = Flask(__name__) 
 mongo = PyMongo(app)
@@ -11,9 +12,9 @@ connection = MongoClient()
 db = connection.silteme
 
 @app.route('/vote/<m_id>')
-def upvote (m_id):
-	db.links.update({'_id': m_id}, 
-					{'$inc': {'votes': 1}})
+def upvote(m_id):
+	db.links.update({'_id': ObjectId(m_id)}, 
+					{'$inc': {'votes': int(1)}})
 	return redirect(url_for('display'))
 
 @app.route('/', methods=['GET', 'POST'])
@@ -39,6 +40,7 @@ def HelloWorld():
 				'author': author, 
 				'current_time': current_time,
 				'votes': 1,
+				'_id':1
 				})
 
 			return render_template('form.html', alert="ok")
