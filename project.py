@@ -46,7 +46,7 @@ def HelloWorld():
 	return render_template('form.html')
 @app.route('/all')
 def display():
-	return render_template("info.html", data = db.links.find())
+	return render_template("info.html", data = db.links.find().sort('upvote').sort('current_time'))
 
 if __name__ == '__main__': # if it was called by python interpreter, no imported to another .py file
     app.debug = True
