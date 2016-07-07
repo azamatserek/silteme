@@ -22,6 +22,7 @@ def HelloWorld():
 		else:
 			author = request.form["author"]
 			current_time = str(datetime.now())
+
 			print current_time
 			print url
 			print author
@@ -29,8 +30,8 @@ def HelloWorld():
 			db.links.insert({
 				'url': url, 
 				'author': author, 
-				'current_time': current_time
-
+				'current_time': current_time,
+				'vote': 1,
 				})
 
 			return render_template('form.html', alert="ok")
