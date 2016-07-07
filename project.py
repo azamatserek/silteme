@@ -1,25 +1,36 @@
 from flask import Flask, render_template, request
 from datetime import datetime
 
+import validators
+
 app = Flask(__name__) 
+
+
 @app.route('/', methods=['GET', 'POST'])
 def HelloWorld():
 	if request.method == "POST":
 		url = request.form["url"]
-		author = request.form["author"]
-		current_time = str(datetime.now())
 
-		print current_time
-		print url
-		print author
+		if not validators.url(url):
+			url = "http://" + url
 
-		data = {
-			"url": url,
-			"author": author,
-			"time": current_time
-		}
+		if not validators.url(url):
+		    return "INCORRECT URL"
+		else:
+			author = request.form["author"]
+			current_time = str(datetime.now())
+			print current_time
+			print url
+			print author
 
-		return render_template("info.html", data=data)
+			data = {
+				"url": url,
+				"author": author,
+				"time": current_time
+			}
+
+			return render_template("info.html", data=data)
+
 
 	return render_template('form.html')
 
