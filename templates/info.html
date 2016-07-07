@@ -3,9 +3,11 @@
 	<body>
 		<a href="/">&lt;-- 	back</a>
 		<p>
-			<legend><h3>Link:</h3></legend>{{data.url}}<br>
-			<legend><h3>Author:</h3></legend>{{data.author}}<br>
-			<legend><h3>Current Time:</h3></legend>{{data.time}}
+		    {% for doc in data %}
+				<legend><h3>Link:</h3></legend>{{doc.url}}<br>
+				<legend><h3>Author:</h3></legend>{{doc.author}}<br>
+				<legend><h3>Current Time:</h3></legend>{{doc.current_time}}
+			{% endfor %}	
 		</p>
 	</body>
 </html>
