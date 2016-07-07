@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request
 from datetime import datetime
-
+from flask.ext.pymongo import PyMongo
+from pymongo import MongoClient
 import validators
 
 app = Flask(__name__) 
-
+mongo = PyMongo(app)
+connection = MongoClient()
+db = connection.silteme
 
 @app.route('/', methods=['GET', 'POST'])
 def HelloWorld():
@@ -22,6 +25,11 @@ def HelloWorld():
 			print current_time
 			print url
 			print author
+			
+			db.links.insert({
+				'url': url, 
+				'author': author, 
+				'current_time': current_time})
 
 			data = {
 				"url": url,
