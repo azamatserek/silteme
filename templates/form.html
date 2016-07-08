@@ -1,11 +1,5 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-	<style>
-	
-	</style>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block info %}
 <br>
 <form method="post">
   <fieldset>
@@ -23,7 +17,4 @@
   alert("New item is added");
 </script>
 {% endif %}
-
-
-</body>
-</html>
+{% endblock %}

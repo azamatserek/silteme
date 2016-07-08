@@ -1,16 +1,24 @@
-<html>
-	<head></head>
-	<body>
+{% extends "layout.html" %}
+{% block info %}
 		<a href="/">&lt;-- 	back</a>
 		<p>
+		<table border="2">
+		<tr>
+		<th>Link</th>
+		<th>Author</th>
+		<th>Current Time</th>
+		<th>Votes</th>
+		<th>Upvote</th>
+		</tr>
 		    {% for doc in data %}
-				<h3>Link:</h3>{{doc.url}}<br/>
-				<h3>Author:</h3>{{doc.author}}<br/>
-				<h3>Current Time:</h3>{{doc.current_time}}<br/>
-				<h3>Votes: </h3> {{doc.votes}}<br/>
-				<h3><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></h3>
+				<tr>
+					<td>{{doc.url}}</td>
+					<td>{{doc.author}}<</td>
+					<td><{{doc.current_time}}</td>
+					<td>{{doc.votes}}</td>
+					<td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td>
+				</tr>
 			{% endfor %}	
-			<hr/>
-		</p>
-	</body>
-</html>
+			
+		</table>
+{% endblock %}
