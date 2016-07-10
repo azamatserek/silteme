@@ -11,11 +11,14 @@ mongo = PyMongo(app)
 connection = MongoClient()
 db = connection.silteme
 
-@app.route('/vote/<m_id>')
+@app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
-	db.links.update({'_id': ObjectId(m_id)}, 
-					{'$inc': {'votes': int(1)}})
-	return redirect(url_for('display'))
+	if request.method == 'GET':
+		print "get request"
+		db.links.update({'_id': ObjectId(m_id)}, 
+						{'$inc': {'votes': int(1)}})
+		# return redirect(url_for('display'))
+		return "hello"
 
 @app.route('/', methods=['GET', 'POST'])
 def HelloWorld():
