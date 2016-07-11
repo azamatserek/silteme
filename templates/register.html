@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block info %}
+<div class="container">
+	<br/>
+	<h4> Registration </h4>
+	<br/>
+	<form class="form-inline" method="post">
+		<input type="text" class="form-control" placeholder="Username" name="username" value="{{request.form.username}}">
+		<input type="password" class="form-control" name="pass" value="{{request.form.pass}}">
+		<input class = "btn btn-default" type = "submit" value = "Register">
+	</form>
+</div>
+{% endblock %}
