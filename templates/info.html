@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block info %}
-		<a href="/">&lt;-- 	back</a>
 		<p>
 		<table border="2">
 		<tr>
@@ -12,8 +11,8 @@
 		</tr>
 		    {% for doc in data %}
 				<tr>
-					<td>{{doc.url}}</td>
-					<td>{{doc.author}}<</td>
+					<td><a href="{{doc.url}}">{{doc.url}}</a></td>
+					<td>{{doc.author}}</td>
 					<td><{{doc.current_time}}</td>
 					<td>{{doc.votes}}</td>
 					<!-- <td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td> -->

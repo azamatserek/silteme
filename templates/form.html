@@ -1,25 +1,13 @@
 {% extends "layout.html" %}
 {% block info %}
-<br>
+
 <form class="form-inline" method="post">
   <fieldset>
     <legend>Add URL</legend>
+    <p style="color: red;">{{error}}</p>
     <label>Link:</label>
     <input type="text" name="url" placeholder="Enter URL address"><br>
-    <label>Author:</label>
-    <input type="text" name="author" placeholder="Enter your name"><br><br>
     <input type="submit" value="Submit">
   </fieldset>
 </form>
-
-{% if alert %}
-<script type="text/javascript">
-  alert("New item is added");
-</script>
-{% endif %}
-{% if alert2 %}
-<script type="text/javascript">
-  alert("Such url is already added");
-</script>
-{% endif %}
 {% endblock %}

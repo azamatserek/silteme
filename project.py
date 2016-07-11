@@ -19,6 +19,9 @@ connection = MongoClient()
 db = connection.silteme
 bcrypt = Bcrypt(app)
 
+def render (template, **kw):
+	print session.get('username')
+	return render_template(template, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
@@ -31,7 +34,6 @@ def upvote(m_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-	session['username'] = 'Abzal'
 	if request.method == "POST":
 		if 'username' in session:
 			url = request.form["url"]
@@ -39,35 +41,37 @@ def index():
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return "INCORRECT URL"
+			    return render('form.html', error='INCORRECT URL')
 			else:
 				existing_url = links.find_one({'url': url})
 				if not existing_url:
-					author = request.form["author"]
 					current_time = str(datetime.now())
 
 					print current_time
 					print url
-					print author
+
+					cur_user = db.users.find_one({'name': session['username']})
 					
 					db.links.insert({
 						'url': url, 
-						'author': author, 
+						'author': cur_user['name'],
+						'author_id': cur_user['_id'],
 						'current_time': current_time,
 						'votes': 1
 						})
 
-					return render_template('form.html', alert="ok")
+					return render('form.html', error="New item is added")
 				else:
-					return render_template('form.html',alert2 = "ok")
+					return render('form.html', error="URL already exists")
 		else:
+			flash('Please log in')
 			redirect(url_for('login'))
 
-	return render_template('form.html')
+	return render('form.html')
 
 @app.route('/all')
 def display():
-	return render_template("info.html", data = db.links.find().sort('upvote').sort('current_time'))
+	return render("info.html", data = db.links.find().sort('upvote').sort('current_time'))
 
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -81,9 +85,9 @@ def login():
 				flash('successfully logged in')
 				return redirect(url_for('index'))
 		error = 'Invalid username/password combination'
-		return render_template('login.html', data=request.form, error=error)
+		return render('login.html', data=request.form, error=error)
 
-	return render_template('login.html')
+	return render('login.html')
 
 @app.route('/register', methods = ['POST', 'GET'])
 def register():
@@ -97,9 +101,15 @@ def register():
 			flash('successfully registered')
 			return redirect(url_for('index'))
 		error = 'That username already exists'
-		return render_template('register.html', data=request.form, error=error)
-	return render_template('register.html')
+		return render('register.html', data=request.form, error=error)
+	return render('register.html')
 	
+
+@app.route('/logout')
+def logout():
+	session.clear()
+	return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
 	app.secret_key = 'fha87vyfsd87vyfd87vydsf87vydfs8v7ydfsv87dfsyv87dfyv87dsfyv'
