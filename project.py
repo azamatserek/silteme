@@ -5,7 +5,7 @@ from flask import url_for
 from flask import redirect
 from flask import session
 from flask import flash
-from flask.ext.bcrypt import Bcrypt as bcrypt
+from flask.ext.bcrypt import Bcrypt
 
 from datetime import datetime
 from flask.ext.pymongo import PyMongo
@@ -17,6 +17,8 @@ app = Flask(__name__)
 mongo = PyMongo(app)
 connection = MongoClient()
 db = connection.silteme
+bcrypt = Bcrypt(app)
+
 
 @app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
@@ -68,27 +70,34 @@ def display():
 	return render_template("info.html", data = db.links.find().sort('upvote').sort('current_time'))
 
 
-@app.route('/login', methods = ['POST'])
+@app.route('/login', methods = ['GET', 'POST'])
 def login():
-	users = mongo.db.users
-	login_user = users.find_one({'name':request.form['username']})
-	if login_user:
-		if bcrypt.hashpw(request.form['pass'].encode('utf-8'),login_user['password'].encode('utf-8')) == login_user['password'].encode('utf-8'):
-			session['username'] = request.form['username']
-			return redirect(url_for('index'))
-	return 'Invalid username/password combination'
+	if request.method == 'POST':
+		users = db.users
+		login_user = users.find_one({'name':request.form['username']})
+		if login_user:
+			if bcrypt.check_password_hash(login_user['password'], request.form['pass'].encode('utf-8')):
+				session['username'] = request.form['username']
+				flash('successfully logged in')
+				return redirect(url_for('index'))
+		error = 'Invalid username/password combination'
+		return render_template('login.html', data=request.form, error=error)
+
+	return render_template('login.html')
 
 @app.route('/register', methods = ['POST', 'GET'])
 def register():
 	if request.method == 'POST':
-		users = mongo.db.users
+		users = db.users
 		existing_user = users.find_one({'name': request.form['username']})
 		if existing_user is None:
-			hashpass = bcrypt.hashpw(request.form['pass'].encode('utf-8'),bcrypt.getsalt())
+			hashpass = bcrypt.generate_password_hash(request.form['pass'].encode('utf-8'))
 			users.insert({'name':request.form['username'], 'password': hashpass})
 			session['username'] = request.form['username']
+			flash('successfully registered')
 			return redirect(url_for('index'))
-		return 'That username already exists'
+		error = 'That username already exists'
+		return render_template('register.html', data=request.form, error=error)
 	return render_template('register.html')
 	
 

@@ -4,9 +4,10 @@
 	<br/>
 	<h4> Registration </h4>
 	<br/>
+	<p style="color: red;">{{error}}</p>
 	<form class="form-inline" method="post">
-		<input type="text" class="form-control" placeholder="Username" name="username" value="{{request.form.username}}">
-		<input type="password" class="form-control" name="pass" value="{{request.form.pass}}">
+		<input type="text" class="form-control" placeholder="Username" name="username" value="{% if data %}{{data.username}}{% endif %}">
+		<input type="password" class="form-control" name="pass" value="{% if data %}{{data.pass}}{% endif %}">
 		<input class = "btn btn-default" type = "submit" value = "Register">
 	</form>
 </div>
