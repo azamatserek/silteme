@@ -7,6 +7,11 @@ from flask import session
 from flask import flash
 from flask.ext.bcrypt import Bcrypt
 
+
+from bs4 import BeautifulSoup as bf
+import urllib2
+
+
 from datetime import datetime
 from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
@@ -41,7 +46,7 @@ def index():
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return render('form.html', error='INCORRECT URL')
+			    return render('form.html', error='URL is incorrect')
 			else:
 				existing_url = links.find_one({'url': url})
 				if not existing_url:
@@ -51,16 +56,33 @@ def index():
 					print url
 
 					cur_user = db.users.find_one({'name': session['username']})
-					
-					db.links.insert({
-						'url': url, 
-						'author': cur_user['name'],
-						'author_id': cur_user['_id'],
-						'current_time': current_time,
-						'votes': 1
-						})
 
-					return render('form.html', error="New item is added")
+					html = None
+
+					try:
+						html = urllib2.urlopen(url)
+						html = html.read()
+						soup = bf(html)
+						title = url
+						try:
+							title = soup.find('title').text
+						except Exception:
+							pass
+						
+						db.links.insert({
+							'url': url, 
+							'title': title,
+							'author': cur_user['name'],
+							'author_id': cur_user['_id'],
+							'current_time': current_time,
+							'votes': 1
+							})
+
+						return render('form.html', error="New item is added")
+
+					except Exception:
+						return render('form.html', error="URL is incorrect")
+
 				else:
 					return render('form.html', error="URL already exists")
 		else:
