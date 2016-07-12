@@ -25,16 +25,27 @@ db = connection.silteme
 bcrypt = Bcrypt(app)
 
 def render (template, **kw):
-	print session.get('username')
 	return render_template(template, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
 	if request.method == 'GET':
-		print "get request"
-		db.links.update({'_id': ObjectId(m_id)}, 
-						{'$inc': {'votes': int(1)}})
-		# return redirect(url_for('display'))
+		username = session.get('username')
+		print username
+		if username is None:
+			flash('You are not logged in')
+			return redirect(url_for('login'))
+		else:
+			l_id = m_id
+			u_id = db.users.find_one({'name': username})['_id']
+			exists = db.user_votes.find_one({'u_id': u_id, 'l_id': l_id})
+			if exists:
+				print exists
+			else:
+				db.links.update({'_id': ObjectId(m_id)}, 
+							{'$inc': {'votes': int(1)}})
+				db.user_votes.insert({'u_id': u_id,'l_id': l_id})
+	
 		return "hello"
 
 @app.route('/', methods=['GET', 'POST'])
@@ -104,6 +115,7 @@ def login():
 		if login_user:
 			if bcrypt.check_password_hash(login_user['password'], request.form['pass'].encode('utf-8')):
 				session['username'] = request.form['username']
+
 				flash('successfully logged in')
 				return redirect(url_for('index'))
 		error = 'Invalid username/password combination'
@@ -129,7 +141,7 @@ def register():
 
 @app.route('/logout')
 def logout():
-	session.clear()
+	session.pop('username', None)
 	return redirect(url_for('index'))
 
 

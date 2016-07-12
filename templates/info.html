@@ -13,7 +13,7 @@
 				<tr>
 					<td><a href="{{doc.url}}">{{doc.title}}</a></td>
 					<td>{{doc.author}}</td>
-					<td><{{doc.current_time}}</td>
+					<td>{{doc.current_time}}</td>
 					<td>{{doc.votes}}</td>
 					<!-- <td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td> -->
 					<td>
@@ -24,14 +24,32 @@
 		</table>
 
 		<script type="text/javascript">
+			function reqListener() {  
+			  var data = JSON.parse(this.responseText);  
+			  console.log(data);  
+			}
+
+			function reqError(err) {  
+			  console.log('Fetch Error :-S', err);  
+			}
+
 			function voteUp (doc_id) {
-				fetch('/vote/'+doc_id, {
-					method: 'get'
-				}).then(function(response) {
-					console.log(response);
-				}).catch(function(err) {
-					// Error :(
-				});
+				// fetch('/vote/'+doc_id, {
+				// 	method: 'get'
+				// }).then(function(response) {
+				// 	console.log(response);
+				// 	console.log(response.url.split('login'));
+				// 	if (response.url.split('login').length > 1) {
+				// 		alert('Please log in to vote up');
+				// 	}
+				// }).catch(function(err) {
+				// 	// Error :(
+				// });		
+				var oReq = new XMLHttpRequest();
+				oReq.onload = reqListener;
+				oReq.onerror = reqError;
+				oReq.open('get', '/vote/'+doc_id, true);
+				oReq.send();
 			}
 		</script>
 
