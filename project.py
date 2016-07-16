@@ -7,16 +7,16 @@ from flask import session
 from flask import flash
 from flask.ext.bcrypt import Bcrypt
 
-
 from bs4 import BeautifulSoup as bf
 import urllib2
-
 
 from datetime import datetime
 from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
 import validators
 from bson.objectid import ObjectId
+
+from .helpers import *
 
 app = Flask(__name__) 
 mongo = PyMongo(app)
@@ -26,12 +26,6 @@ bcrypt = Bcrypt(app)
 
 def render (template, **kw):
 	return render_template(template, user=session.get('username'), **kw)
-
-# this function returns a rating value for the given number of votes and live time in seconds
-def getRating (votes, live_time):
-	live_time_hours = live_time / 60.0 / 60.0 # converting seconds to hours
-	gravity = 1.8
-	return votes / (live_time_hours + 2) ** gravity
 
 @app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
