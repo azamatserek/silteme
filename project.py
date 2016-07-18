@@ -52,11 +52,10 @@ def upvote(m_id):
 
 @app.route('/', methods = ['GET', 'POST'])
 def display():
+	data = db.links.find().sort('rating', -1)
 	if request.method == 'GET':
-		data = db.links.find().sort('rating', -1)
 		return render("info.html", data=data)
 	else:
-		data = db.links.find().sort('rating', -1)
 		if 'username' in session:
 			url = request.form["url"]
 			links = db.links
@@ -148,6 +147,10 @@ def logout():
 	session.pop('username', None)
 	return redirect(url_for('display'))
 
+
+@app.template_filter('ctime')
+def timectime(s):
+	return time.ctime(s) # datetime.datetime.fromtimestamp(s)
 
 if __name__ == '__main__':
 	app.secret_key = 'fha87vyfsd87vyfd87vydsf87vydfs8v7ydfsv87dfsyv87dfyv87dsfyv'
