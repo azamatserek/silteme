@@ -50,11 +50,7 @@ def upvote(m_id):
 	
 		return "hello"
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-	return render('form.html')
-
-@app.route('/all', methods = ['GET', 'POST'])
+@app.route('/', methods = ['GET', 'POST'])
 def display():
 	if request.method == 'GET':
 		data = db.links.find().sort('rating', -1)
@@ -125,7 +121,7 @@ def login():
 				session['username'] = request.form['username']
 
 				flash('successfully logged in')
-				return redirect(url_for('index'))
+				return redirect(url_for('display'))
 		error = 'Invalid username/password combination'
 		return render('login.html', data=request.form, error=error)
 
@@ -141,7 +137,7 @@ def register():
 			users.insert({'name':request.form['username'], 'password': hashpass})
 			session['username'] = request.form['username']
 			flash('successfully registered')
-			return redirect(url_for('index'))
+			return redirect(url_for('display'))
 		error = 'That username already exists'
 		return render('register.html', data=request.form, error=error)
 	return render('register.html')
@@ -150,7 +146,7 @@ def register():
 @app.route('/logout')
 def logout():
 	session.pop('username', None)
-	return redirect(url_for('index'))
+	return redirect(url_for('display'))
 
 
 if __name__ == '__main__':

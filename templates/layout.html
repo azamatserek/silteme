@@ -62,12 +62,11 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{url_for('index')}}">silteme.kz</a>
+      <a class="navbar-brand" href="{{url_for('display')}}">silteme.kz</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li><a href="{{url_for('index')}}">Главная страница</a></li>
-        <li><a href="{{url_for('display')}}">Ссылки</a></li>
+        <li><a href="{{url_for('display')}}">Главная страница</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
       {% if user %}
