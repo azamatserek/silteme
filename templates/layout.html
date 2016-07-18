@@ -12,15 +12,16 @@
     .navbar {
       margin-bottom: 0;
       border-radius: 0;
+
     }
     
     /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-    .row.content {height: 340px}
+    .row.content {height: 540px}
     
     /* Set gray background color and 100% height */
     .sidenav {
       padding-top: 20px;
-      background-color: #f1f1f1;
+      background-color: #f8ecc2;
       height: 100%;
     }
     
@@ -36,6 +37,7 @@
       .sidenav {
         height: auto;
         padding: 15px;
+
       }
       .row.content {height:auto;}
     }
@@ -64,8 +66,8 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li><a href="{{url_for('index')}}">Home</a></li>
-        <li><a href="{{url_for('display')}}">Data</a></li>
+        <li><a href="{{url_for('index')}}">Главная страница</a></li>
+        <li><a href="{{url_for('display')}}">Ссылки</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
       {% if user %}
@@ -80,12 +82,14 @@
   </div>
 </nav>
   
-<div class="container-fluid text-center">
+<div class="container-fluid text-center" style = 'background-color: #f8ecc2;'>
   <div class="row content">
     <div class="col-sm-2 sidenav">
+    {% block info2 %}
+      {% endblock %}
     </div>
     <div class="col-sm-8 text-left">
-      <h1>Welcome{% if user %}, {{user}} {% endif %}</h1>
+      <h1>Добро пожаловать{% if user %}, {{user}} {% endif %}</h1>
       {% block info %}
       {% endblock %}
     </div>
@@ -95,7 +99,7 @@
 </div>
 
 <footer class="container-fluid text-center">
-  <p>Footer Text</p>
+  <p>Silteme 2016</p>
 </footer>
 
 </body>

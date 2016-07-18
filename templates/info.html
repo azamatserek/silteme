@@ -1,26 +1,45 @@
 {% extends "layout.html" %}
+{% block info2 %}
+	<div style = "width:200px;height:200px;background-color:white">
+	<form class="form-inline" method="post" >
+	  <fieldset>
+	    <legend>Добавить ссылку</legend>
+	    <p style="color: red;">{{error}}</p>
+	    <label>Link:</label>
+	    <input type="text" name="url" placeholder="Введити URL адрес"><br><br>
+	    <input type="submit" value="Добавить" class="btn btn-danger">
+	  </fieldset>
+	</form>
+	</div>
+{% endblock %}
 {% block info %}
 		<p>
 		<table border="2">
 		<tr>
-		<th>Link</th>
-		<th>Author</th>
-		<th>Current Time</th>
-		<th>Votes</th>
-		<th>Upvote</th>
+		<th>Ссылка</th>
+		<th>Автор</th>
+		<th>Время добавления</th>
+		<th>Рейтинг</th>
+		<th>Апвоут</th>
 		</tr>
 		    {% for doc in data %}
 				<tr>
-					<td><a href="{{doc.url}}">{{doc.title}}</a></td>
+					<td><a style = "color:red" href="{{doc.url}}">{{doc.title}}</a></td>
 					<td>{{doc.author}}</td>
 					<td>{{doc.add_time}}</td>
 					<td>{{doc.rating}}</td>
 					<!-- <td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td> -->
-					<td>
-						<button onclick="voteUp('{{doc._id}}')">Vote</button>
+					<td style = 'height:45px; width:75px;'>
+						<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Upvote</button>
 					</td>
 				</tr>
-			{% endfor %}	
+
+				
+			{% endfor %}
+		
+			
+			
+		
 		</table>
 
 		<script type="text/javascript">

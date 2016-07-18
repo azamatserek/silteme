@@ -33,7 +33,7 @@ def render (template, **kw):
 def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
-		print username
+		# print username
 		if username is None:
 			flash('You are not logged in')
 			return redirect(url_for('login'))
@@ -52,14 +52,22 @@ def upvote(m_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-	if request.method == "POST":
+	return render('form.html')
+
+@app.route('/all', methods = ['GET', 'POST'])
+def display():
+	if request.method == 'GET':
+		data = db.links.find().sort('rating', -1)
+		return render("info.html", data=data)
+	else:
+		data = db.links.find().sort('rating', -1)
 		if 'username' in session:
 			url = request.form["url"]
 			links = db.links
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return render('form.html', error='URL is incorrect')
+			    return render('info.html', error='URL is incorrect (validator failed)', data=data)
 			else:
 				existing_url = links.find_one({'url': url})
 				if not existing_url:
@@ -92,28 +100,20 @@ def index():
 							'rating': get_rating(1, 0)
 							})
 
-						print cur_link['_id']
+						# print cur_link['_id']
 
 						db.user_votes.insert({'u_id': cur_user['_id'],'l_id': ObjectId(link_id)})
 
-						return render('form.html', error="New item is added")
+						return render('info.html', error="New item is added", data=data)
 
 					except Exception:
-						return render('form.html', error="URL is incorrect")
-
+						
+						return render('info.html', error="URL is incorrect", data=data)
 				else:
-					return render('form.html', error="URL already exists")
+					return render('info.html', error="URL already exists", data=data)
 		else:
 			flash('Please log in')
 			redirect(url_for('login'))
-
-	return render('form.html')
-
-@app.route('/all')
-def display():
-	links = db.links.find().sort('rating', -1)
-	return render("info.html", data=links)
-
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
