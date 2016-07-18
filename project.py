@@ -17,6 +17,9 @@ import validators
 from bson.objectid import ObjectId
 import time
 
+from updater import get_rating
+
+
 app = Flask(__name__) 
 mongo = PyMongo(app)
 connection = MongoClient()
@@ -30,7 +33,7 @@ def render (template, **kw):
 def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
-		# print username
+		print username
 		if username is None:
 			flash('You are not logged in')
 			return redirect(url_for('login'))
@@ -79,15 +82,19 @@ def index():
 						except Exception:
 							pass
 						
-						db.links.insert({
+						link_id = db.links.insert({
 							'url': url, 
 							'title': title,
 							'author': cur_user['name'],
 							'author_id': cur_user['_id'],
 							'add_time': current_time,
-							'votes': 0,
-							'rating': 0
+							'votes': 1,
+							'rating': get_rating(1, 0)
 							})
+
+						print cur_link['_id']
+
+						db.user_votes.insert({'u_id': cur_user['_id'],'l_id': ObjectId(link_id)})
 
 						return render('form.html', error="New item is added")
 
