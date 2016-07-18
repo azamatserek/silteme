@@ -15,8 +15,7 @@ from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
 import validators
 from bson.objectid import ObjectId
-
-from .helpers import *
+import time
 
 app = Flask(__name__) 
 mongo = PyMongo(app)
@@ -31,7 +30,7 @@ def render (template, **kw):
 def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
-		print username
+		# print username
 		if username is None:
 			flash('You are not logged in')
 			return redirect(url_for('login'))
@@ -40,7 +39,7 @@ def upvote(m_id):
 			u_id = db.users.find_one({'name': username})['_id']
 			exists = db.user_votes.find_one({'u_id': u_id, 'l_id': l_id})
 			if exists:
-				print exists
+				pass
 			else:
 				db.links.update({'_id': ObjectId(m_id)}, 
 							{'$inc': {'votes': int(1)}})
@@ -61,10 +60,10 @@ def index():
 			else:
 				existing_url = links.find_one({'url': url})
 				if not existing_url:
-					current_time = str(datetime.now())
+					current_time = time.time()
 
-					print current_time
-					print url
+					# print current_time
+					# print url
 
 					cur_user = db.users.find_one({'name': session['username']})
 
@@ -85,8 +84,9 @@ def index():
 							'title': title,
 							'author': cur_user['name'],
 							'author_id': cur_user['_id'],
-							'current_time': current_time,
-							'votes': 1
+							'add_time': current_time,
+							'votes': 0,
+							'rating': 0
 							})
 
 						return render('form.html', error="New item is added")
@@ -104,7 +104,8 @@ def index():
 
 @app.route('/all')
 def display():
-	return render("info.html", data = db.links.find().sort('upvote').sort('current_time'))
+	links = db.links.find().sort('rating', -1)
+	return render("info.html", data=links)
 
 
 @app.route('/login', methods = ['GET', 'POST'])
