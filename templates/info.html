@@ -1,4 +1,21 @@
 {% extends "layout.html" %}
+<style type="text/css">
+	.pagination-page-info {
+	    padding: .6em;
+	    padding-left: 0;
+	    width: 40em;
+	    margin: .5em;
+	    margin-left: 0;
+	    font-size: 12px;
+	}
+	.pagination-page-info b {
+	    color: black;
+	    background: #6aa6ed;
+	    padding-left: 2px;
+	    padding: .1em .25em;
+	    font-size: 150%;
+	}
+</style>
 {% block info2 %}
 	<div style = "width:200px;height:200px;background-color:white">
 	<form class="form-inline" method="post" >
@@ -14,16 +31,19 @@
 {% endblock %}
 {% block info %}
 		<p>
+		{{pagination.info}}
 		<table border="2">
 		<tr>
+		<th>Нумерация</th>
 		<th>Ссылка</th>
 		<th>Автор</th>
 		<th>Время добавления</th>
 		<!-- <th>Рейтинг</th> -->
 		<th>Апвоут</th>
 		</tr>
-		    {% for doc in data %}
+		    {% for doc in links %}
 				<tr>
+					<td>{{loop.index + (pagination.page - 1) * 10}}</td>
 					<td><a style = "color:red" href="{{doc.url}}">{{doc.title}}</a></td>
 					<td>{{doc.author}}</td>
 					<td>{{doc.add_time | ctime}}</td>
@@ -33,14 +53,9 @@
 						<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Upvote</button>
 					</td>
 				</tr>
-
-				
 			{% endfor %}
-		
-			
-			
-		
 		</table>
+		{{pagination.links}}
 
 		<script type="text/javascript">
 			function reqListener() {  

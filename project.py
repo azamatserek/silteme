@@ -7,6 +7,8 @@ from flask import session
 from flask import flash
 from flask.ext.bcrypt import Bcrypt
 
+from flask_paginate import Pagination
+
 from bs4 import BeautifulSoup as bf
 import urllib2
 
@@ -52,19 +54,28 @@ def upvote(m_id):
 
 @app.route('/', methods = ['GET', 'POST'])
 def display():
-	data = db.links.find().sort('rating', -1)
+	search = False
+	q = request.args.get('q')
+	if q:
+		search = True
+
+	page = request.args.get('page', type=int, default=1)
+
+	links = db.links.find().sort('rating', -1).limit(page * 10).skip((page - 1) * 10)
+
+	pagination = Pagination(page=page, total=links.count(), search=search, record_name='links')
+
 	if request.method == 'GET':
-		return render("info.html", data=data)
+		return render("info.html", links=links, pagination=pagination)
 	else:
 		if 'username' in session:
 			url = request.form["url"]
-			links = db.links
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return render('info.html', error='URL is incorrect (validator failed)', data=data)
+			    return render('info.html', error='URL is incorrect (validator failed)', links=links, pagination=pagination)
 			else:
-				existing_url = links.find_one({'url': url})
+				existing_url = db.links.find_one({'url': url})
 				if not existing_url:
 					current_time = time.time()
 
@@ -99,16 +110,16 @@ def display():
 
 						db.user_votes.insert({'u_id': cur_user['_id'],'l_id': ObjectId(link_id)})
 
-						return render('info.html', error="New item is added", data=data)
+						return render('info.html', error="New item is added", links=links, pagination=pagination)
 
 					except Exception:
 						
-						return render('info.html', error="URL is incorrect", data=data)
+						return render('info.html', error="URL is incorrect", links=links, pagination=pagination)
 				else:
-					return render('info.html', error="URL already exists", data=data)
+					return render('info.html', error="URL already exists", links=links, pagination=pagination)
 		else:
 			flash('Please log in')
-			redirect(url_for('login'))
+			return redirect(url_for('login'))
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
