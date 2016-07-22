@@ -19,29 +19,29 @@
 {% block info3 %}
 <div>
 {% if user %}
-	 <h4>Welcome, {{user}}</h4>
-	 <h6><a href="{{url_for('logout')}}">Sign out</a></h6>
+	 <h4>Привет, {{user}}</h4>
+	 <h6><a href="{{url_for('logout')}}">Выйти</a></h6>
 {% else %}
 	 {% if restore %}
-		 <h4>Password reset</h4>
+		 <h4>Восстановление пароля</h4>
 	 {% endif %}
 	 <p style="color: red;">{{error}}{{email}}</p>
 	 <form class="form-inline" name="auth_form" method="post" onsubmit="onsubmitform();">
 	 {% if restore %}
-	 	 	<input type="password" class="form-control" name="pass" placeholder="Password" required=""><br>
-		 	<input class="btn btn-danger" type="submit" value="Reset"/>
+	 	 	<input type="password" class="form-control" name="pass" placeholder="Пароль" required=""><br>
+		 	<input class="btn btn-danger" type="submit" value="Восстановить"/>
 	 {% else %}
-	 	<input type="text" class="form-control" placeholder="Login" name="username" value="{% if data %}{{data.username}}{% endif %}" required=""><br>
-	 	<input type="password" class="form-control" name="pass" placeholder="Password" value="{% if data %}{{data.pass}}{% endif %}" required=""><br>
+	 	<input type="text" class="form-control" placeholder="Логин" name="username" value="{% if data %}{{data.username}}{% endif %}" required=""><br>
+	 	<input type="password" class="form-control" name="pass" placeholder="Пароль" value="{% if data %}{{data.pass}}{% endif %}" required=""><br>
 	 	{% if email %}
 	 	<input type="email" class="form-control" name="email" placeholder="Email" value="" required><br>
 	 	{% endif %}
 	 	<p style="font-size: 0.7em; text-align: right;">
-	 		<a href="#" onclick="forgot();">Forgot password?</a>
+	 		<a href="#" onclick="forgot();">Забыли пароль?</a>
 	 	</p>
 	 	<p>
-		 	<input class="btn btn-danger" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign in"/>
-		 	<input class="btn btn-default" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign up"/>
+		 	<input class="btn btn-danger" name="auth" type="submit" onclick="document.pressed='sign_in'" value="Войти"/>
+		 	<input class="btn btn-default" name="auth" type="submit" onclick="document.pressed='sign_up'" value="Зарегаться"/>
 	 	</p>
 	 {% endif %}
 	 </form>
@@ -63,11 +63,11 @@
 {% block info %}
 		<p>
 		{{pagination.info}}
-		<table border="0" width="100%" style="text-align: left;">
+		<table border="0" style="text-align: left;">
 		    {% for doc in links %}
 				<tr>
-					<td style="font-weight: bold; text-align: center;">{{loop.index + (pagination.page - 1) * 10}}</td>
-					<td>
+					<td style="font-weight: bold; text-align: center;padding: 5px;">{{loop.index + (pagination.page - 1) * 10}}</td>
+					<td style="padding: 10px; padding-left: 5px;">
 						<i class="fa fa-thumbs-up fa-2x" aria-hidden="true" onclick="voteUp('{{doc._id}}')" id="vote"></i>
 					</td>
 					<td>
@@ -136,9 +136,9 @@
 			}
 
 			function onsubmitform () {
-				if (document.pressed == "Sign in") {
+				if (document.pressed == "sign_in") {
 					document.auth_form.action = "{{url_for('login')}}";
-				} else if (document.pressed == "Sign up") {
+				} else if (document.pressed == "sign_up") {
 					document.auth_form.action = "{{url_for('register')}}";
 				} 
 				return true;

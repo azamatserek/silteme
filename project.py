@@ -60,7 +60,7 @@ def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
 		if username is None:
-			return 'error, You are not logged in'
+			return 'error, Вы не вошли в систему'
 		else:
 			l_id = m_id
 			u_id = db.users.find_one({'name': username})['_id']
@@ -83,7 +83,8 @@ def display():
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return render(error_url='URL is incorrect (validator failed)')
+				flash(u'Неправильный URL', 'error')
+				return render()
 			else:
 				existing_url = db.links.find_one({'url': url})
 				if not existing_url:
@@ -111,13 +112,16 @@ def display():
 							})
 
 						db.user_votes.insert({'u_id': cur_user['_id'],'l_id': ObjectId(link_id)})
-						return render(error_url="New item is added")
+						flash(u"Добавлена новая ссылка", 'success')
+						return render()
 					except Exception:
-						return render(error_url="URL is incorrect")
+						flash(u'Неправильный URL', 'error')
+						return render()
 				else:
-					return render(error_url="URL already exists")
+					flash(u'Такой URL уже существует', 'warning')
+					return render()
 		else:
-			flash('Please log in', 'warning')
+			flash(u'Пожалуйста, войдите в систему', 'warning')
 			return redirect(url_for('login'))
 
 @app.route('/restore/<token>', methods=['GET', 'POST'])
@@ -131,15 +135,15 @@ def restore(token):
 			user = db.users.find_one({'email': email})
 			password = request.form['pass']
 			if len(password) < 6:
-				return render(restore=True, error='Password length must be at least 6')
+				return render(restore=True, error=u'Длина пароля должна состоять как минимум из 6 символов')
 			hashpass = bcrypt.generate_password_hash(password.encode('utf-8'))
 			db.users.update({'email': email}, {'$set': {'password': hashpass}})
 			db.forgot.remove({'_id': forgot['_id']})
 			session['username'] = user['name']
-			flash('Successful password reset', 'success')
+			flash(u'Ваш пароль успешно восстановлен', 'success')
 			return render()
 		else:
-			return render(error='Incorrect token')
+			return render(error=u'Неправильная ссылка')
 @app.route('/forgot', methods=['GET', 'POST'])
 def forgot():
 	if request.method == 'POST':
@@ -155,15 +159,15 @@ def forgot():
 				db.forgot.remove({'_id': already['_id']})
 
 			db.forgot.insert({'email': email, 'token': token})
-			html = 'Dear %s, <br/><br/>Please go to %s to reset your password<br/><br/>Best regards,<br/>Silteme.kz<br/>Azamat Serek' % (name, 'http://localhost:5000/restore/%s'%token)
-			msg = Message(subject="Password reset [silteme.kz]",
+			html = u'Дорогой %s, <br/><br/>Пожалуйста, пройдите по %s чтобы восстановить свой пароль.<br/><br/>С уважением,<br/>Silteme.kz<br/>Азамат Серек' % (name, 'http://localhost:5000/restore/%s'%token)
+			msg = Message(subject=u"Восстановление пароля [silteme.kz]",
 				html=html,
 				sender='silteme.kz@gmail.com',
 				recipients=[email])
 			mail.send(msg)
-			return render(error='Please check your email')
+			return render(error=u'Проверьте вашу почту')
 		else:
-			return render(error='No such email exists')
+			return render(error=u'В базе нет такой почты')
 	return render(error='hi')
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -174,9 +178,9 @@ def login():
 		if login_user:
 			if bcrypt.check_password_hash(login_user['password'], request.form['pass'].encode('utf-8')):
 				session['username'] = request.form['username']
-				flash('successfully logged in', 'success')
+				flash(u'Вы успешно вошли в систему', 'success')
 				return redirect(url_for('display'))
-		error = 'Invalid username/password combination'
+		error = u'Неправильный введен пароль или логин'
 		return render(data=request.form, error=error)
 
 	return render()
@@ -188,17 +192,17 @@ def register():
 		username = request.form['username']
 		password = request.form['pass']
 		if 'email' not in request.form:
-			return render(data=request.form, email='Please write your email')
+			return render(data=request.form, email=u'Пожалуйста, введите вашу почтовый адрес')
 		email = request.form['email']
 		error = ''
 		existing_user = users.find_one({'name': username})
 		if existing_user is None:
 			if len(username) < 3:
-				error = 'Login length must be at least 3'
+				error = u'Логин должен быть длины больше или равно 3'
 			if len(password) < 6:
-				error = 'Password length must be at least 6'
+				error = u'Пароль должен быть длины больше или равно 6'
 			if users.find_one({'email': email}):
-				error = 'This email already exists'
+				error = u'Такой почтовый адрес уже занят'
 			if len(error) > 0:
 				return render(data=request.form, error=error)
 			hashpass = bcrypt.generate_password_hash(password.encode('utf-8'))
@@ -206,23 +210,23 @@ def register():
 				'email': email, 
 				'password': hashpass})
 			session['username'] = username
-			flash('successfully registered', 'success')
+			flash(u'Вы успешно зарегистрированы', 'success')
 			return redirect(url_for('display'))
-		error = 'That username already exists'
+		error = u'Такой пользователь уже существует'
 		return render(data=request.form, error=error)
 	return render()
 
 @app.route('/logout')
 def logout():
 	session.pop('username', None)
-	flash('successfully logged out', 'success')
+	flash(u'Вы успешно вышли из системы', 'success')
 	return redirect(url_for('display'))
 
 
 @app.template_filter('ctime')
 def timectime(s):
 	now=time.time()
-	return str(timedelta(seconds=now-s)).split(".")[0] + ' ago' # datetime.datetime.fromtimestamp(s)
+	return str(timedelta(seconds=now-s)).split(".")[0] + u' назад' # datetime.datetime.fromtimestamp(s)
 
 if __name__ == '__main__':
 	mail = Mail(app)
