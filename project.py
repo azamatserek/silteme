@@ -1,3 +1,5 @@
+#coding=utf8
+
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -49,8 +51,8 @@ def render (template='info.html', **kw):
 		search = True
 	page = request.args.get('page', type=int, default=1)
 	links = db.links.find().sort('rating', -1).limit(10).skip((page-1)*10)
-	print page, links.count()
-	pagination = Pagination(display_msg=None, page=page,  css_framework='foundation', total=links.count(), search=search, record_name='links')
+	display_msg = '[' + str((page-1)*10+1) + '...' + str(min(page*10, links.count())) + u'] из ' + str(db.links.find().count())
+	pagination = Pagination(display_msg=display_msg, page=page,  css_framework='foundation', total=links.count(), search=search, record_name='links')
 	return render_template(template, links=links, pagination=pagination, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
