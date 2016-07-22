@@ -6,29 +6,41 @@ from flask import redirect
 from flask import session
 from flask import flash
 from flask.ext.bcrypt import Bcrypt
-
+from flask.ext.pymongo import PyMongo
+from flask.ext.mail import Mail, Message
 from flask_paginate import Pagination
 
 from bs4 import BeautifulSoup as bf
-import urllib2
-
 from datetime import datetime
-from flask.ext.pymongo import PyMongo
 from pymongo import MongoClient
-import validators
 from bson.objectid import ObjectId
-import time
-import os
-
 
 from updater import get_rating
 
+import urllib2
+import time
+import validators
+import os
+import hashlib
 
 app = Flask(__name__) 
 mongo = PyMongo(app)
 connection = MongoClient()
 db = connection.silteme
 bcrypt = Bcrypt(app)
+mail = Mail(app)
+
+app.config.update(
+	SECRET_KEY = 'fha87vyfsd87vyfd87vydsf87vydfs8v7ydfsv87dfsyv87dfyv87dsfyv',
+	DEBUG = True,
+	MAIL_SERVER = 'smtp.gmail.com',
+	MAIL_PORT = 587,
+	MAIL_USE_TLS = True,
+	MAIL_USE_SSL = False,
+	MAIL_USERNAME = 'silteme.kz@gmail.com',
+	MAIL_PASSWORD = 'silteme123',
+	DEFAULT_MAIL_SENDER = 'silteme.kz@gmail.com')
+
 
 def render (template='info.html', **kw):
 	search = False
@@ -44,7 +56,6 @@ def render (template='info.html', **kw):
 def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
-		# print username
 		if username is None:
 			flash('You are not logged in')
 			return redirect(url_for('login'))
@@ -107,10 +118,54 @@ def display():
 			flash('Please log in')
 			return redirect(url_for('login'))
 
+@app.route('/restore/<token>', methods=['GET', 'POST'])
+def restore(token):
+	if request.method == 'GET':
+		return render(restore=True)
+	elif request.method == 'POST':
+		forgot = db.forgot.find_one({'token': token})
+		if forgot:
+			email = forgot['email']
+			user = db.users.find_one({'email': email})
+			password = request.form['pass']
+			if len(password) < 6:
+				return render(restore=True, error='Password length must be at least 6')
+			hashpass = bcrypt.generate_password_hash(password.encode('utf-8'))
+			db.users.update({'email': email}, {'$set': {'password': hashpass}})
+			db.forgot.remove({'_id': forgot['_id']})
+			session['username'] = user['name']
+			flash('Successful password reset')
+			return render()
+		else:
+			return render(error='Incorrect token')
+@app.route('/forgot', methods=['GET', 'POST'])
+def forgot():
+	if request.method == 'POST':
+		users = db.users
+		email = request.form['email']
+		user = users.find_one({'email': email})
+		if user:
+			name, password, email = user['name'], user['password'], user['email']
+			token = hashlib.sha256(bcrypt.generate_password_hash(password + name + email)).hexdigest()
+			
+			already = db.forgot.find_one({'email': email})
+			if already:
+				db.forgot.remove({'_id': already['_id']})
+
+			db.forgot.insert({'email': email, 'token': token})
+			html = 'Dear %s, <br/><br/>Please go to %s to reset your password<br/><br/>Best regards,<br/>Silteme.kz<br/>Azamat Serek' % (name, 'http://localhost:5000/restore/%s'%token)
+			msg = Message(subject="Password reset [silteme.kz]",
+				html=html,
+				sender='silteme.kz@gmail.com',
+				recipients=[email])
+			mail.send(msg)
+			return render(error='Please check your email')
+		else:
+			return render(error='No such email exists')
+	return render(error='hi')
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
-	print request.form
 	if request.method == 'POST':
 		users = db.users
 		login_user = users.find_one({'name':request.form['username']})
@@ -130,6 +185,9 @@ def register():
 		users = db.users
 		username = request.form['username']
 		password = request.form['pass']
+		if 'email' not in request.form:
+			return render(data=request.form, email='Please write your email')
+		email = request.form['email']
 		error = ''
 		existing_user = users.find_one({'name': username})
 		if existing_user is None:
@@ -137,10 +195,14 @@ def register():
 				error = 'Login length must be at least 3'
 			if len(password) < 6:
 				error = 'Password length must be at least 6'
+			if users.find_one({'email': email}):
+				error = 'This email already exists'
 			if len(error) > 0:
 				return render(data=request.form, error=error)
 			hashpass = bcrypt.generate_password_hash(password.encode('utf-8'))
-			users.insert({'name': username, 'password': hashpass})
+			users.insert({'name': username, 
+				'email': email, 
+				'password': hashpass})
 			session['username'] = username
 			flash('successfully registered')
 			return redirect(url_for('display'))
@@ -159,6 +221,5 @@ def timectime(s):
 	return time.ctime(s) # datetime.datetime.fromtimestamp(s)
 
 if __name__ == '__main__':
-	app.secret_key = 'fha87vyfsd87vyfd87vydsf87vydfs8v7ydfsv87dfsyv87dfyv87dsfyv'
-	app.debug = True
+	mail = Mail(app)
 	app.run(host = '0.0.0.0', port = 5000)

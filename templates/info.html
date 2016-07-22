@@ -22,15 +22,28 @@
 	 <h4>Welcome, {{user}}</h4>
 	 <h6><a href="{{url_for('logout')}}">Sign out</a></h6>
 {% else %}
-	 <h4>Welcome</h4>
-	 <p style="color: red;">{{error}}</p>
+	 {% if restore %}
+		 <h4>Password reset</h4>
+	 {% endif %}
+	 <p style="color: red;">{{error}}{{email}}</p>
 	 <form class="form-inline" name="auth_form" method="post" onsubmit="onsubmitform();">
-	 	<input type="text" class="form-control" placeholder="Login" name="username" value="{% if data %}{{data.username}}{% endif %}"><br>
-	 	<input type="password" class="form-control" name="pass" placeholder="Password" value="{% if data %}{{data.pass}}{% endif %}"><br>
+	 {% if restore %}
+	 	 	<input type="password" class="form-control" name="pass" placeholder="Password" required=""><br>
+		 	<input class="btn btn-danger" type="submit" value="Reset"/>
+	 {% else %}
+	 	<input type="text" class="form-control" placeholder="Login" name="username" value="{% if data %}{{data.username}}{% endif %}" required=""><br>
+	 	<input type="password" class="form-control" name="pass" placeholder="Password" value="{% if data %}{{data.pass}}{% endif %}" required=""><br>
+	 	{% if email %}
+	 	<input type="email" class="form-control" name="email" placeholder="Email" value="" required><br>
+	 	{% endif %}
+	 	<p style="font-size: 0.7em; text-align: right;">
+	 		<a href="#" onclick="forgot();">Forgot password?</a>
+	 	</p>
 	 	<p>
 		 	<input class="btn btn-success" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign in"/>
 		 	<input class="btn btn-default" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign up"/>
 	 	</p>
+	 {% endif %}
 	 </form>
 
 {% endif %}
@@ -107,6 +120,11 @@
 					document.auth_form.action = "{{url_for('register')}}";
 				} 
 				return true;
+			}
+
+			function forgot () {
+				$('form[name="auth_form"]').empty();
+				$('form[name="auth_form"]').append('<input type="email" class="form-control" name="email" placeholder="Email" required/><br/><br/><input type="submit" class="btn btn-danger" onclick="document.auth_form.action=\'{{url_for('forgot')}}\'" value="Restore"/> ');
 			}
 
 		</script>
