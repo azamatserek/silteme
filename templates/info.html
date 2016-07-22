@@ -16,14 +16,34 @@
 	    font-size: 150%;
 	}
 </style>
+{% block info3 %}
+<div>
+{% if user %}
+	 <h4>Welcome, {{user}}</h4>
+	 <h6><a href="{{url_for('logout')}}">Sign out</a></h6>
+{% else %}
+	 <h4>Welcome</h4>
+	 <p style="color: red;">{{error}}</p>
+	 <form class="form-inline" name="auth_form" method="post" onsubmit="onsubmitform();">
+	 	<input type="text" class="form-control" placeholder="Login" name="username" value="{% if data %}{{data.username}}{% endif %}"><br>
+	 	<input type="password" class="form-control" name="pass" placeholder="Password" value="{% if data %}{{data.pass}}{% endif %}"><br>
+	 	<p>
+		 	<input class="btn btn-success" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign in"/>
+		 	<input class="btn btn-default" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign up"/>
+	 	</p>
+	 </form>
+
+{% endif %}
+ </div>
+{% endblock %}
+
 {% block info2 %}
-	<div style = "width:200px;height:200px;background-color:white">
+	<div style = "background-color:white">
 	<form class="form-inline" method="post" >
 	  <fieldset>
 	    <legend>Добавить ссылку</legend>
-	    <p style="color: red;">{{error}}</p>
-	    <label>Link:</label>
-	    <input type="text" name="url" placeholder="Введити URL адрес"><br><br>
+	    <p style="color: red;">{{error_url}}</p>
+	    <input type="text" class="form-control" name="url" placeholder="Введите URL адрес"><br><br>
 	    <input type="submit" value="Добавить" class="btn btn-danger">
 	  </fieldset>
 	</form>
@@ -32,25 +52,19 @@
 {% block info %}
 		<p>
 		{{pagination.info}}
-		<table border="2">
-		<tr>
-		<th>Нумерация</th>
-		<th>Ссылка</th>
-		<th>Автор</th>
-		<th>Время добавления</th>
-		<!-- <th>Рейтинг</th> -->
-		<th>Апвоут</th>
-		</tr>
+		<table border="0" width="100%" style="text-align: left;">
 		    {% for doc in links %}
 				<tr>
 					<td>{{loop.index + (pagination.page - 1) * 10}}</td>
-					<td><a style = "color:red" href="{{doc.url}}">{{doc.title}}</a></td>
+					<td>
+						<a style = "color:red" href="{{doc.url}}" target="_blank">{{doc.title}}</a>
+					</td>
 					<td>{{doc.author}}</td>
 					<td>{{doc.add_time | ctime}}</td>
 					<!-- <td>{{doc.rating}}</td> -->
 					<!-- <td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td> -->
 					<td style = 'height:45px; width:75px;'>
-						<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Upvote</button>
+						<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Плюс</button>
 					</td>
 				</tr>
 			{% endfor %}
@@ -85,6 +99,16 @@
 				oReq.open('get', '/vote/'+doc_id, true);
 				oReq.send();
 			}
+
+			function onsubmitform () {
+				if (document.pressed == "Sign in") {
+					document.auth_form.action = "{{url_for('login')}}";
+				} else if (document.pressed == "Sign up") {
+					document.auth_form.action = "{{url_for('register')}}";
+				} 
+				return true;
+			}
+
 		</script>
 
 {% endblock %}

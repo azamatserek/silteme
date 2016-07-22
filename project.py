@@ -18,6 +18,8 @@ from pymongo import MongoClient
 import validators
 from bson.objectid import ObjectId
 import time
+import os
+
 
 from updater import get_rating
 
@@ -28,8 +30,15 @@ connection = MongoClient()
 db = connection.silteme
 bcrypt = Bcrypt(app)
 
-def render (template, **kw):
-	return render_template(template, user=session.get('username'), **kw)
+def render (template='info.html', **kw):
+	search = False
+	q = request.args.get('q')
+	if q:
+		search = True
+	page = request.args.get('page', type=int, default=1)
+	links = db.links.find().sort('rating', -1).limit(page * 10).skip((page - 1) * 10)
+	pagination = Pagination(page=page, total=links.count(), search=search, record_name='links')
+	return render_template(template, links=links, pagination=pagination, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
 def upvote(m_id):
@@ -49,43 +58,25 @@ def upvote(m_id):
 				db.links.update({'_id': ObjectId(m_id)}, 
 							{'$inc': {'votes': int(1)}})
 				db.user_votes.insert({'u_id': u_id,'l_id': l_id})
-	
 		return "hello"
 
 @app.route('/', methods = ['GET', 'POST'])
 def display():
-	search = False
-	q = request.args.get('q')
-	if q:
-		search = True
-
-	page = request.args.get('page', type=int, default=1)
-
-	links = db.links.find().sort('rating', -1).limit(page * 10).skip((page - 1) * 10)
-
-	pagination = Pagination(page=page, total=links.count(), search=search, record_name='links')
-
 	if request.method == 'GET':
-		return render("info.html", links=links, pagination=pagination)
-	else:
+		return render()
+	if request.method == 'POST':
 		if 'username' in session:
 			url = request.form["url"]
 			if not validators.url(url):
 				url = "http://" + url
 			if not validators.url(url):
-			    return render('info.html', error='URL is incorrect (validator failed)', links=links, pagination=pagination)
+			    return render(error_url='URL is incorrect (validator failed)')
 			else:
 				existing_url = db.links.find_one({'url': url})
 				if not existing_url:
 					current_time = time.time()
-
-					# print current_time
-					# print url
-
 					cur_user = db.users.find_one({'name': session['username']})
-
 					html = None
-
 					try:
 						html = urllib2.urlopen(url)
 						html = html.read()
@@ -106,36 +97,32 @@ def display():
 							'rating': get_rating(1, 0)
 							})
 
-						# print cur_link['_id']
-
 						db.user_votes.insert({'u_id': cur_user['_id'],'l_id': ObjectId(link_id)})
-
-						return render('info.html', error="New item is added", links=links, pagination=pagination)
-
+						return render(error_url="New item is added")
 					except Exception:
-						
-						return render('info.html', error="URL is incorrect", links=links, pagination=pagination)
+						return render(error_url="URL is incorrect")
 				else:
-					return render('info.html', error="URL already exists", links=links, pagination=pagination)
+					return render(error_url="URL already exists")
 		else:
 			flash('Please log in')
 			return redirect(url_for('login'))
 
+
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+	print request.form
 	if request.method == 'POST':
 		users = db.users
 		login_user = users.find_one({'name':request.form['username']})
 		if login_user:
 			if bcrypt.check_password_hash(login_user['password'], request.form['pass'].encode('utf-8')):
 				session['username'] = request.form['username']
-
 				flash('successfully logged in')
 				return redirect(url_for('display'))
 		error = 'Invalid username/password combination'
-		return render('login.html', data=request.form, error=error)
+		return render(data=request.form, error=error)
 
-	return render('login.html')
+	return render()
 
 @app.route('/register', methods = ['POST', 'GET'])
 def register():
@@ -149,9 +136,8 @@ def register():
 			flash('successfully registered')
 			return redirect(url_for('display'))
 		error = 'That username already exists'
-		return render('register.html', data=request.form, error=error)
-	return render('register.html')
-	
+		return render(data=request.form, error=error)
+	return render()
 
 @app.route('/logout')
 def logout():

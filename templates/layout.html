@@ -21,8 +21,8 @@
     /* Set gray background color and 100% height */
     .sidenav {
       padding-top: 20px;
-      background-color: #f8ecc2;
-      height: 100%;
+      background-color: #d3d3d3;
+      height: 878px;
     }
     
     /* Set black background color, white text and some padding */
@@ -37,6 +37,7 @@
       .sidenav {
         height: auto;
         padding: 15px;
+        background-color: #ffffff;
 
       }
       .row.content {height:auto;}
@@ -66,15 +67,14 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li><a href="{{url_for('display')}}">Главная страница</a></li>
+        
       </ul>
       <ul class="nav navbar-nav navbar-right">
       {% if user %}
         <li><a href="#">{{user}}</a></li>
-        <li><a href="{{url_for('logout')}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        
       {% else %}
-        <li><a href="{{url_for('login')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-        <li><a href="{{url_for('register')}}"><span class="glyphicon glyphicon-file"></span>Register</a></li>
+        
       {% endif %}
       </ul>
     </div>
@@ -87,12 +87,14 @@
     {% block info2 %}
       {% endblock %}
     </div>
-    <div class="col-sm-8 text-left">
-      <h1>Добро пожаловать{% if user %}, {{user}} {% endif %}</h1>
+    <div class="col-sm-8">
       {% block info %}
       {% endblock %}
     </div>
     <div class="col-sm-2 sidenav">
+       {% block info3 %}
+      {% endblock %}
+
     </div>
   </div>
 </div>
