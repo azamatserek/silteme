@@ -128,11 +128,20 @@ def login():
 def register():
 	if request.method == 'POST':
 		users = db.users
-		existing_user = users.find_one({'name': request.form['username']})
+		username = request.form['username']
+		password = request.form['pass']
+		error = ''
+		existing_user = users.find_one({'name': username})
 		if existing_user is None:
-			hashpass = bcrypt.generate_password_hash(request.form['pass'].encode('utf-8'))
-			users.insert({'name':request.form['username'], 'password': hashpass})
-			session['username'] = request.form['username']
+			if len(username) < 3:
+				error = 'Login length must be at least 3'
+			if len(password) < 6:
+				error = 'Password length must be at least 6'
+			if len(error) > 0:
+				return render(data=request.form, error=error)
+			hashpass = bcrypt.generate_password_hash(password.encode('utf-8'))
+			users.insert({'name': username, 'password': hashpass})
+			session['username'] = username
 			flash('successfully registered')
 			return redirect(url_for('display'))
 		error = 'That username already exists'
