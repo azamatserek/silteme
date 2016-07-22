@@ -7,53 +7,28 @@
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="https://use.fontawesome.com/5cdb6a0df7.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
   <style>
-    /* Remove the navbar's default margin-bottom and rounded borders */
-    .navbar {
-      margin-bottom: 0;
-      border-radius: 0;
-
-    }
-    
-    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-    .row.content {height: 540px}
-    
-    /* Set gray background color and 100% height */
-    .sidenav {
-      padding-top: 20px;
-      background-color: #d3d3d3;
-      height: 878px;
-    }
-    
-    /* Set black background color, white text and some padding */
-    footer {
-      background-color: #555;
-      color: white;
-      padding: 15px;
-    }
-    
-    /* On small screens, set height to 'auto' for sidenav and grid */
-    @media screen and (max-width: 767px) {
-      .sidenav {
-        height: auto;
-        padding: 15px;
-        background-color: #ffffff;
-
-      }
-      .row.content {height:auto;}
+    #vote:hover {
+      color: darkred;
     }
   </style>
 </head>
 <body>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+<script type="text/javascript">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+      {% for category, message in messages %}
+        toastr.{{category}}('{{message}}');
+      {% endfor %}
+
+    {% endif %}
+  {% endwith %}
+  
+</script>
 
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
@@ -81,27 +56,36 @@
   </div>
 </nav>
   
-<div class="container-fluid text-center" style = 'background-color: #f8ecc2;'>
-  <div class="row content">
-    <div class="col-sm-2 sidenav">
+<style type="text/css">
+  #main {
+  }
+  #middle {
+    background-color: #fff;
+    box-shadow: 1px 0px 20px rgba(0,0,0,0.5);
+    
+  }
+  body {
+    background-color: lightgrey;
+  }
+</style>
+
+<div class="container-fluid text-center" id="main">
+  <div class="row">
+    <div class="col-md-2">
     {% block info2 %}
       {% endblock %}
     </div>
-    <div class="col-sm-8">
+    <div class="col-md-8" id="middle">
       {% block info %}
       {% endblock %}
     </div>
-    <div class="col-sm-2 sidenav">
+    <div class="col-md-2">
        {% block info3 %}
       {% endblock %}
 
     </div>
   </div>
 </div>
-
-<footer class="container-fluid text-center">
-  <p>Silteme 2016</p>
-</footer>
 
 </body>
 </html>

@@ -40,7 +40,7 @@
 	 		<a href="#" onclick="forgot();">Forgot password?</a>
 	 	</p>
 	 	<p>
-		 	<input class="btn btn-success" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign in"/>
+		 	<input class="btn btn-danger" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign in"/>
 		 	<input class="btn btn-default" name="auth" type="submit" onclick="document.pressed=this.value" value="Sign up"/>
 	 	</p>
 	 {% endif %}
@@ -51,14 +51,12 @@
 {% endblock %}
 
 {% block info2 %}
-	<div style = "background-color:white">
+	<div>
+    <h4>Добавить ссылку</h4>
 	<form class="form-inline" method="post" >
-	  <fieldset>
-	    <legend>Добавить ссылку</legend>
 	    <p style="color: red;">{{error_url}}</p>
 	    <input type="text" class="form-control" name="url" placeholder="Введите URL адрес"><br><br>
 	    <input type="submit" value="Добавить" class="btn btn-danger">
-	  </fieldset>
 	</form>
 	</div>
 {% endblock %}
@@ -68,16 +66,23 @@
 		<table border="0" width="100%" style="text-align: left;">
 		    {% for doc in links %}
 				<tr>
-					<td>{{loop.index + (pagination.page - 1) * 10}}</td>
+					<td style="font-weight: bold; text-align: center;">{{loop.index + (pagination.page - 1) * 10}}</td>
 					<td>
-						<a style = "color:red" href="{{doc.url}}" target="_blank">{{doc.title}}</a>
+						<i class="fa fa-thumbs-up fa-2x" aria-hidden="true" onclick="voteUp('{{doc._id}}')" id="vote"></i>
 					</td>
-					<td>{{doc.author}}</td>
-					<td>{{doc.add_time | ctime}}</td>
-					<!-- <td>{{doc.rating}}</td> -->
-					<!-- <td><a href="{{url_for('upvote', m_id=doc._id)}}">Upvote</a></td> -->
-					<td style = 'height:45px; width:75px;'>
-						<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Плюс</button>
+					<td>
+					<table border="0" width="100%">
+						<tr>
+							<td><a style = "color:red;"; href="{{doc.url}}" target="_blank">{{doc.title}}</a></td>
+						</tr>
+						<tr style="font-size: 0.8em;">
+							<td><a href='#'>{{doc.author}}</a> | 
+							{{doc.add_time | ctime}}</td>
+<!-- 							<td style = 'height:45px; width:75px;'>
+								<button class="btn btn-warning" onclick="voteUp('{{doc._id}}')">Плюс</button>
+							</td>
+ -->						</tr>
+					</table>
 					</td>
 				</tr>
 			{% endfor %}
@@ -106,11 +111,28 @@
 				// }).catch(function(err) {
 				// 	// Error :(
 				// });		
+
 				var oReq = new XMLHttpRequest();
 				oReq.onload = reqListener;
 				oReq.onerror = reqError;
 				oReq.open('get', '/vote/'+doc_id, true);
+				oReq.onreadystatechange = notify;
 				oReq.send();
+
+				function notify () {
+					if (oReq.readyState == 4){
+						var response = oReq.response;
+						var status=response.split(',')[0];
+						var message=response.split(',')[1];
+						if (status == 'error')
+							toastr.error(message);
+						if (status == 'success')
+							toastr.success(message);
+					}
+				}
+
+
+
 			}
 
 			function onsubmitform () {

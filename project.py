@@ -13,7 +13,7 @@ from flask.ext.mail import Mail, Message
 from flask_paginate import Pagination
 
 from bs4 import BeautifulSoup as bf
-from datetime import datetime
+from datetime import datetime, timedelta
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
@@ -51,8 +51,8 @@ def render (template='info.html', **kw):
 		search = True
 	page = request.args.get('page', type=int, default=1)
 	links = db.links.find().sort('rating', -1).limit(10).skip((page-1)*10)
-	display_msg = '[' + str((page-1)*10+1) + '...' + str(min(page*10, links.count())) + u'] из ' + str(db.links.find().count())
-	pagination = Pagination(display_msg=display_msg, page=page,  css_framework='foundation', total=links.count(), search=search, record_name='links')
+	# display_msg = '[' + str((page-1)*10+1) + '...' + str(min(page*10, links.count())) + u'] из ' + str(db.links.find().count())
+	pagination = Pagination(display_msg=' ', page=page,  css_framework='foundation', total=links.count(), search=search, record_name='links')
 	return render_template(template, links=links, pagination=pagination, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
@@ -60,19 +60,18 @@ def upvote(m_id):
 	if request.method == 'GET':
 		username = session.get('username')
 		if username is None:
-			flash('You are not logged in')
-			return redirect(url_for('login'))
+			return 'error, You are not logged in'
 		else:
 			l_id = m_id
 			u_id = db.users.find_one({'name': username})['_id']
 			exists = db.user_votes.find_one({'u_id': u_id, 'l_id': l_id})
 			if exists:
-				pass
+				return u"error, Вы уже голосовали"
 			else:
 				db.links.update({'_id': ObjectId(m_id)}, 
 							{'$inc': {'votes': int(1)}})
 				db.user_votes.insert({'u_id': u_id,'l_id': l_id})
-		return "hello"
+		return u"success, Ваш голос принят"
 
 @app.route('/', methods = ['GET', 'POST'])
 def display():
@@ -118,7 +117,7 @@ def display():
 				else:
 					return render(error_url="URL already exists")
 		else:
-			flash('Please log in')
+			flash('Please log in', 'warning')
 			return redirect(url_for('login'))
 
 @app.route('/restore/<token>', methods=['GET', 'POST'])
@@ -137,7 +136,7 @@ def restore(token):
 			db.users.update({'email': email}, {'$set': {'password': hashpass}})
 			db.forgot.remove({'_id': forgot['_id']})
 			session['username'] = user['name']
-			flash('Successful password reset')
+			flash('Successful password reset', 'success')
 			return render()
 		else:
 			return render(error='Incorrect token')
@@ -175,7 +174,7 @@ def login():
 		if login_user:
 			if bcrypt.check_password_hash(login_user['password'], request.form['pass'].encode('utf-8')):
 				session['username'] = request.form['username']
-				flash('successfully logged in')
+				flash('successfully logged in', 'success')
 				return redirect(url_for('display'))
 		error = 'Invalid username/password combination'
 		return render(data=request.form, error=error)
@@ -207,7 +206,7 @@ def register():
 				'email': email, 
 				'password': hashpass})
 			session['username'] = username
-			flash('successfully registered')
+			flash('successfully registered', 'success')
 			return redirect(url_for('display'))
 		error = 'That username already exists'
 		return render(data=request.form, error=error)
@@ -216,12 +215,14 @@ def register():
 @app.route('/logout')
 def logout():
 	session.pop('username', None)
+	flash('successfully logged out', 'success')
 	return redirect(url_for('display'))
 
 
 @app.template_filter('ctime')
 def timectime(s):
-	return time.ctime(s) # datetime.datetime.fromtimestamp(s)
+	now=time.time()
+	return str(timedelta(seconds=now-s)).split(".")[0] + ' ago' # datetime.datetime.fromtimestamp(s)
 
 if __name__ == '__main__':
 	mail = Mail(app)
