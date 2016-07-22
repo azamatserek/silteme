@@ -48,8 +48,9 @@ def render (template='info.html', **kw):
 	if q:
 		search = True
 	page = request.args.get('page', type=int, default=1)
-	links = db.links.find().sort('rating', -1).limit(page * 10).skip((page - 1) * 10)
-	pagination = Pagination(page=page, total=links.count(), search=search, record_name='links')
+	links = db.links.find().sort('rating', -1).limit(10).skip((page-1)*10)
+	print page, links.count()
+	pagination = Pagination(display_msg=None, page=page,  css_framework='foundation', total=links.count(), search=search, record_name='links')
 	return render_template(template, links=links, pagination=pagination, user=session.get('username'), **kw)
 
 @app.route('/vote/<m_id>', methods=['GET'])
